@@ -19,9 +19,12 @@ library
   ghc-options:          -Wall -fno-warn-unused-imports
   -- default-extensions:   
   -- other-extensions:     
-  exposed-modules:      App.Income.Items
+  exposed-modules:      App.Income.Items,
+                        App.Income.Items.Monthly
   -- other-modules:        
-  build-depends:        base
+  build-depends:        base,
+                        text,
+                        csv
 
 -- executable app-income-items
 --   default-language:     Haskell2010
