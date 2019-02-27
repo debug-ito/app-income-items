@@ -1,9 +1,6 @@
 module Main (main) where
 
-import App.Income.Items.Monthly (readReport)
-import System.Environment (getArgs)
+import App.Income.Items.Exec (mainMonthlyReport)
 
 main :: IO ()
-main = do
-  (filename : _) <- getArgs
-  print =<< readReport filename
+main = mainMonthlyReport
