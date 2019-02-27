@@ -5,11 +5,15 @@
 --
 -- 
 module App.Income.Items.Monthly
-  ( readReport
+  ( readReport,
+    Report(..),
+    Item(..),
+    Yen
   ) where
 
 import Control.Exception.Safe (throwString)
 import qualified Data.ByteString as BS
+import Data.Char (isDigit)
 import Data.Foldable (toList)
 import Data.List (elemIndex, break)
 import Data.Maybe (listToMaybe, catMaybes)
@@ -48,12 +52,17 @@ unwrapMaybe _ (Just a) = return a
 
 readSJIS :: FilePath -> IO String
 readSJIS file = do
-  conv <- ICU.open "shift-jis" Nothing
+  conv <- ICU.open "Shift_JIS" Nothing
   unpack <$> ICU.toUnicode conv <$> BS.readFile file
+
+-- | The raw CSV file contains a lot of '=' symbols in unexpected
+-- places. This function sanitize the raw CSV text by removing them.
+sanitizeRawCSV :: String -> String
+sanitizeRawCSV raw = filter (/= '=') raw
 
 readReport :: FilePath -> IO Report
 readReport file = do
-  csv <- unwrapEither =<< (CSV.parseCSV file <$> readSJIS file)
+  csv <- unwrapEither =<< (CSV.parseCSV file <$> sanitizeRawCSV <$> readSJIS file)
   print csv
   (year, month) <- unwrapMaybe "Cannot find year/month field." $ readYearMonth 0 csv
   let incomes = readItems "支　給　内　容" csv
@@ -64,12 +73,12 @@ searchField :: String -> CSV.Record -> Maybe Int
 searchField = elemIndex
 
 (!?) :: [a] -> Int -> Maybe a
-l !? i = if i >= 0 && i <= length l
+l !? i = if i >= 0 && i < length l
          then Just $ l !! i
          else Nothing
 
 parseItem :: (CSV.Field, CSV.Field) -> Maybe Item
-parseItem (name, amount) = Item (pack name) <$> readMaybe amount
+parseItem (name, amount) = Item (pack name) <$> readMaybe (filter isDigit amount)
 
 readItems :: String -- ^ the heading field
           -> CSV.CSV
@@ -87,6 +96,7 @@ readColumnPairs heading csv = go [] Nothing csv
     go acc mh@(Just h_index) (record : rest) =
       case record !? h_index of
         Nothing -> acc
+        Just "" -> acc
         Just name -> 
           case record !? (h_index + 1) of
             Nothing -> go acc mh rest
