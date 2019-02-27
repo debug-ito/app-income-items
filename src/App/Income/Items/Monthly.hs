@@ -5,12 +5,16 @@
 --
 -- 
 module App.Income.Items.Monthly
-  () where
+  ( readReport
+  ) where
 
+import Control.Exception.Safe (throwString)
+import qualified Data.ByteString as BS
 import Data.Foldable (toList)
 import Data.List (elemIndex, break)
-import Data.Maybe (listToMaybe)
-import Data.Text (Text)
+import Data.Maybe (listToMaybe, catMaybes)
+import Data.Text (Text, unpack, pack)
+import qualified Data.Text.ICU.Convert as ICU
 import qualified Text.CSV as CSV
 import Text.Read (readMaybe)
 
@@ -31,11 +35,30 @@ data Report =
   }
   deriving (Show,Eq,Ord)
 
+negateItem :: Item -> Item
+negateItem item = item { itemAmount = negate $ itemAmount item }
+
+unwrapEither :: Show a => Either a b -> IO b
+unwrapEither (Right b) = return b
+unwrapEither (Left a) = throwString $ show a
+
+unwrapMaybe :: String -> Maybe a -> IO a
+unwrapMaybe e Nothing = throwString e
+unwrapMaybe _ (Just a) = return a
+
 readSJIS :: FilePath -> IO String
-readSJIS = undefined
+readSJIS file = do
+  conv <- ICU.open "shift-jis" Nothing
+  unpack <$> ICU.toUnicode conv <$> BS.readFile file
 
 readReport :: FilePath -> IO Report
-readReport = undefined
+readReport file = do
+  csv <- unwrapEither =<< (CSV.parseCSV file <$> readSJIS file)
+  print csv
+  (year, month) <- unwrapMaybe "Cannot find year/month field." $ readYearMonth 0 csv
+  let incomes = readItems "支　給　内　容" csv
+      payments = map negateItem $ readItems "引　去　内　容" csv
+  return $ Report year month (payments ++ incomes)
 
 searchField :: String -> CSV.Record -> Maybe Int
 searchField = elemIndex
@@ -44,6 +67,14 @@ searchField = elemIndex
 l !? i = if i >= 0 && i <= length l
          then Just $ l !! i
          else Nothing
+
+parseItem :: (CSV.Field, CSV.Field) -> Maybe Item
+parseItem (name, amount) = Item (pack name) <$> readMaybe amount
+
+readItems :: String -- ^ the heading field
+          -> CSV.CSV
+          -> [Item]
+readItems heading csv = catMaybes $ map parseItem $ readColumnPairs heading csv
 
 readColumnPairs :: String -- ^ the heading field
                 -> CSV.CSV

@@ -24,17 +24,20 @@ library
   -- other-modules:        
   build-depends:        base,
                         text,
-                        csv
+                        csv,
+                        bytestring,
+                        text-icu,
+                        safe-exceptions
 
--- executable app-income-items
---   default-language:     Haskell2010
---   hs-source-dirs:       app
---   main-is:              Main.hs
---   ghc-options:          -Wall -fno-warn-unused-imports
---   -- other-modules:        
---   -- default-extensions:   
---   -- other-extensions:     
---   build-depends:        base
+executable app-income-items
+  default-language:     Haskell2010
+  hs-source-dirs:       app
+  main-is:              Main.hs
+  ghc-options:          -Wall -fno-warn-unused-imports
+  -- other-modules:        
+  -- default-extensions:   
+  -- other-extensions:     
+  build-depends:        base, app-income-items
 
 test-suite spec
   type:                 exitcode-stdio-1.0
