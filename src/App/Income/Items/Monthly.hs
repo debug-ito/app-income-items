@@ -7,8 +7,7 @@
 module App.Income.Items.Monthly
   ( readReport,
     Report(..),
-    Item(..),
-    Yen
+    Item(..)
   ) where
 
 import Control.Exception.Safe (throwString)
@@ -22,7 +21,7 @@ import qualified Data.Text.ICU.Convert as ICU
 import qualified Text.CSV as CSV
 import Text.Read (readMaybe)
 
-type Yen = Integer
+import App.Income.Items.Money (Yen)
 
 data Item =
   Item
