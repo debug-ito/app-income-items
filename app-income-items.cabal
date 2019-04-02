@@ -23,6 +23,7 @@ library
                         App.Income.Items.Monthly,
                         App.Income.Items.Money,
                         App.Income.Items.Zaim,
+                        App.Income.Items.Convert,
                         App.Income.Items.Exec
   -- other-modules:        
   build-depends:        base,
