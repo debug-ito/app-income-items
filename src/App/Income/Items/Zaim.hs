@@ -12,8 +12,8 @@ module App.Income.Items.Zaim
     Account
   ) where
 
-import Data.Text (Text)
-import Data.Time (Day)
+import Data.Text (Text, unpack)
+import Data.Time (Day, formatTime, defaultTimeLocale)
 import qualified Text.CSV as CSV
 
 import App.Income.Items.Money (Yen)
@@ -37,7 +37,23 @@ data Entry =
   deriving (Show,Eq,Ord)
 
 toRecord :: Entry -> CSV.Record
-toRecord = undefined
-
+toRecord e =
+  [date, category, subcategory, memo, pay_from, income_to, pay_amount, income_amount, transfer_amount]
+  where
+    date = formatTime defaultTimeLocale "%Y-%m-%d" $ entryDate e
+    category = unpack $ entryCategory e
+    subcategory = unpack $ entrySubcategory e
+    memo = unpack $ entryName e
+    amount = show $ entryAmount e
+    (pay_from, income_to, pay_amount, income_amount, transfer_amount) =
+      case entryTransaction e of
+        Payment a -> (unpack a, "", amount, "", "")
+        Income a -> ("", unpack a, "", amount, "")
+        Transfer from to -> (unpack from, unpack to, "", "", amount)
+    
 toCSV :: [Entry] -> CSV.CSV
-toCSV = undefined
+toCSV es = title : map toRecord es
+  where
+    title = [ "date", "category", "subcategory", "memo", "pay_from", "income_to",
+              "pay_amount", "income_amount", "transfer_amount"
+            ]
