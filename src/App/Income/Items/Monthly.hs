@@ -62,7 +62,7 @@ sanitizeRawCSV raw = filter (/= '=') raw
 readReport :: FilePath -> IO Report
 readReport file = do
   csv <- unwrapEither =<< (CSV.parseCSV file <$> sanitizeRawCSV <$> readSJIS file)
-  print csv
+  -- print csv
   (year, month) <- unwrapMaybe "Cannot find year/month field." $ readYearMonth 0 csv
   let incomes = readItems "支　給　内　容" csv
       payments = map negateItem $ readItems "引　去　内　容" csv
