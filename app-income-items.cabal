@@ -34,7 +34,8 @@ library
                         safe-exceptions,
                         time,
                         aeson,
-                        casing
+                        casing,
+                        yaml
 
 executable app-income-items
   default-language:     Haskell2010

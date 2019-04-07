@@ -7,6 +7,7 @@
 module App.Income.Items.Zaim
   ( toRecord,
     toCSV,
+    toCSVString,
     Entry(..),
     Transaction(..),
     Account,
@@ -60,3 +61,6 @@ toCSV es = title : map toRecord es
     title = [ "date", "category", "subcategory", "memo", "pay_from", "income_to",
               "pay_amount", "income_amount", "transfer_amount"
             ]
+
+toCSVString :: [Entry] -> String
+toCSVString = CSV.printCSV . toCSV

@@ -8,16 +8,18 @@ module App.Income.Items.Exec
   ( mainMonthlyReport
   ) where
 
-import App.Income.Items.Monthly (readReport, Report(..), Item(..))
 import Control.Monad (forM_)
 import qualified Data.Text.IO as TIO
+import Data.Yaml (decodeFileThrow)
 import System.Environment (getArgs)
+
+import App.Income.Items.Monthly (readReport, Report(..), Item(..))
+import App.Income.Items.Convert (convert)
+import App.Income.Items.Zaim (toCSVString)
 
 mainMonthlyReport :: IO ()
 mainMonthlyReport = do
-  (filename : _) <- getArgs
+  (config_yaml : filename : _) <- getArgs
+  config <- decodeFileThrow config_yaml
   rep <- readReport filename
-  forM_ (reportItems rep) $ \item -> do
-    TIO.putStr $ itemName item
-    putStr " : "
-    putStrLn $ show $ itemAmount item
+  putStrLn $ toCSVString $ convert config rep
