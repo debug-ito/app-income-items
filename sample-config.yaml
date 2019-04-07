@@ -1,0 +1,12 @@
+zaim_entry_day: 25
+zaim_account:  "操作対象のZaim口座"
+items:
+  - payment_name: "引去項目名"
+    zaim_income:
+      name: "Zaim収入項目名(メモ)"
+      category: "Zaim収入カテゴリ"
+      subcategory: "Zaim収入サブカテゴリ"
+    zaim_payment:
+      name: "Zaim支出項目名(メモ)"
+      category: "Zaim支出カテゴリ"
+      subcategory: "Zaim支出サブカテゴリ"
