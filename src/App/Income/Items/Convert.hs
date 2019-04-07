@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 -- |
 -- Module: App.Income.Items.Convert
 -- Description: Convert Monthly report to Zaim entries
@@ -9,9 +10,13 @@ module App.Income.Items.Convert
     Config(..)
   ) where
 
+import Data.Aeson (FromJSON(..), genericParseJSON)
+import qualified Data.Aeson as Aeson
 import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import Data.Time (Day, fromGregorian)
+import GHC.Generics (Generic)
+import Text.Casing (quietSnake)
 
 import App.Income.Items.Monthly (Report(..), Item(..))
 import App.Income.Items.Zaim
@@ -23,7 +28,12 @@ data Config =
     zaimAccount :: !Account,
     items :: ![ConfigPayment]
   }
-  deriving (Show,Eq,Ord)
+  deriving (Show,Eq,Ord,Generic)
+
+instance FromJSON Config where
+  parseJSON = genericParseJSON (aOptions fmod)
+    where
+      fmod = quietSnake
 
 data ConfigPayment =
   ConfigPayment
@@ -31,7 +41,12 @@ data ConfigPayment =
     zaimIncome :: !ConfigZaim,
     zaimPayment :: !ConfigZaim
   }
-  deriving (Show,Eq,Ord)
+  deriving (Show,Eq,Ord,Generic)
+
+instance FromJSON ConfigPayment where
+  parseJSON = genericParseJSON (aOptions fmod)
+    where
+      fmod = quietSnake
 
 data ConfigZaim =
   ConfigZaim
@@ -39,7 +54,17 @@ data ConfigZaim =
     zaimCategory :: !Category,
     zaimSubcategory :: !Category
   }
-  deriving (Show,Eq,Ord)
+  deriving (Show,Eq,Ord,Generic)
+
+instance FromJSON ConfigZaim where
+  parseJSON = genericParseJSON (aOptions fmod)
+    where
+      fmod = quietSnake . drop 4
+
+aOptions :: (String -> String) -> Aeson.Options
+aOptions fmod = Aeson.defaultOptions
+                { Aeson.fieldLabelModifier = fmod
+                }
 
 convert :: Config -> Report -> [Entry]
 convert conf report = reportItemToEntries conf date =<< reportItems report
