@@ -9,7 +9,8 @@ module App.Income.Items.Zaim
     toCSV,
     Entry(..),
     Transaction(..),
-    Account
+    Account,
+    Category
   ) where
 
 import Data.Text (Text, unpack)
@@ -20,6 +21,8 @@ import App.Income.Items.Money (Yen)
 
 type Account = Text
 
+type Category = Text
+
 data Transaction = Payment !Account -- ^ Payment from the account
                  | Income !Account -- ^ Income into the account
                  | Transfer !Account !Account -- ^ Transfer from the 1st account into the 2nd account
@@ -28,8 +31,8 @@ data Transaction = Payment !Account -- ^ Payment from the account
 data Entry =
   Entry
   { entryDate :: !Day,
-    entryCategory :: !Text,
-    entrySubcategory :: !Text,
+    entryCategory :: !Category,
+    entrySubcategory :: !Category,
     entryTransaction :: !Transaction,
     entryAmount :: !Yen,
     entryName :: !Text

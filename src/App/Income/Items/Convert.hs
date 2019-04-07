@@ -9,10 +9,34 @@ module App.Income.Items.Convert
     Config(..)
   ) where
 
-import App.Income.Items.Monthly (Report(..))
-import App.Income.Items.Zaim (Entry(..))
+import Data.Text (Text)
 
-data Config = Config
+import App.Income.Items.Monthly (Report(..))
+import App.Income.Items.Zaim (Entry(..), Account, Category)
+
+data Config =
+  Config
+  { zaimEntryDay :: !Int,
+    zaimAccount :: !Account,
+    items :: ![ConfigPayment]
+  }
+  deriving (Show,Eq,Ord)
+
+data ConfigPayment =
+  ConfigPayment
+  { paymentName :: !Text,
+    zaimIncome :: !ConfigZaim,
+    zaimPayment :: !ConfigZaim
+  }
+  deriving (Show,Eq,Ord)
+
+data ConfigZaim =
+  ConfigZaim
+  { zaimName :: !Text,
+    zaimCategory :: !Category,
+    zaimSubcategory :: !Category
+  }
+  deriving (Show,Eq,Ord)
 
 convert :: Config -> Report -> [Entry]
 convert = undefined
