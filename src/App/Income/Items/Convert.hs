@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, OverloadedStrings #-}
 -- |
 -- Module: App.Income.Items.Convert
 -- Description: Convert Monthly report to Zaim entries
@@ -13,6 +13,7 @@ module App.Income.Items.Convert
 import Data.Aeson (FromJSON(..), genericParseJSON)
 import qualified Data.Aeson as Aeson
 import Data.Maybe (listToMaybe)
+import Data.Monoid ((<>))
 import Data.Text (Text)
 import Data.Time (Day, fromGregorian)
 import GHC.Generics (Generic)
@@ -50,7 +51,7 @@ instance FromJSON ConfigPayment where
 
 data ConfigZaim =
   ConfigZaim
-  { zaimName :: !Text,
+  { zaimName :: !(Maybe Text),
     zaimCategory :: !Category,
     zaimSubcategory :: !Category
   }
@@ -89,8 +90,13 @@ reportItemToEntries conf date item =
                                then Income $ zaimAccount conf
                                else Payment $ zaimAccount conf,
             entryAmount = abs $ itemAmount item,
-            entryName = zaimName zconf
+            entryName = entry_name
           }
+          where
+            entry_name = case (zaimName zconf, is_income) of
+                           (Just n, _) -> n
+                           (Nothing, False) -> itemName item
+                           (Nothing, True) -> itemName item <> " 給与控除分"
 
 zaimDay :: Config -> Report -> Day
 zaimDay c r = fromGregorian y m d

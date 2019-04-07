@@ -18,7 +18,7 @@ library
   hs-source-dirs:       src
   ghc-options:          -Wall -fno-warn-unused-imports
   -- default-extensions:   
-  other-extensions:     DeriveGeneric
+  other-extensions:     DeriveGeneric, OverloadedStrings
   exposed-modules:      App.Income.Items,
                         App.Income.Items.Monthly,
                         App.Income.Items.Money,
