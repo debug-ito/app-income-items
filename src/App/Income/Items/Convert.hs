@@ -27,6 +27,7 @@ data Config =
   Config
   { zaimEntryDay :: !Int,
     zaimAccount :: !Account,
+    defaultZaimIncomeCategory :: !Category,
     items :: ![ConfigPayment]
   }
   deriving (Show,Eq,Ord,Generic)
@@ -39,7 +40,7 @@ instance FromJSON Config where
 data ConfigPayment =
   ConfigPayment
   { paymentName :: !Text,
-    zaimIncome :: !ConfigZaim,
+    zaimIncome :: !(Maybe ConfigZaim),
     zaimPayment :: !ConfigZaim
   }
   deriving (Show,Eq,Ord,Generic)
@@ -79,8 +80,15 @@ reportItemToEntries conf date item =
     _ -> []
   where
     mmatching_config = listToMaybe $ filter (\conf_pay -> itemName item == paymentName conf_pay) $ items conf
-    paymentEntries conf_pay = [makeEntry True $ zaimIncome conf_pay, makeEntry False $ zaimPayment conf_pay]
+    paymentEntries conf_pay = [makeEntry True $ income_config, makeEntry False $ zaimPayment conf_pay]
       where
+        income_config =
+          case zaimIncome conf_pay of
+            Just zconf -> zconf
+            Nothing -> ConfigZaim { zaimName = Nothing,
+                                    zaimCategory = defaultZaimIncomeCategory conf,
+                                    zaimSubcategory = ""
+                                  }
         makeEntry is_income zconf =
           Entry
           { entryDate = date,
