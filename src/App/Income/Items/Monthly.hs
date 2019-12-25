@@ -77,7 +77,9 @@ l !? i = if i >= 0 && i < length l
          else Nothing
 
 parseItem :: (CSV.Field, CSV.Field) -> Maybe Item
-parseItem (name, amount) = Item (pack name) <$> readMaybe (filter isDigit amount)
+parseItem (name, amount) = Item (pack name) <$> readMaybe (filter isMoneyLetter amount)
+  where
+    isMoneyLetter c = isDigit c || c == '-'
 
 readItems :: String -- ^ the heading field
           -> CSV.CSV
